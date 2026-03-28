@@ -1,19 +1,18 @@
 node {
 
-    // ambil source code dari repo
-    checkout scm
+    stage('Checkout') {
+        checkout scm
+    }
 
-    // Build stage
     stage('Build') {
-        docker.image('php:7.4-cli').inside('-u root') {
+        docker.image('composer:2').inside('-u root') {
             sh 'composer install'
         }
     }
 
-    // Testing stage
-    stage('Testing') {
+    stage('Test') {
         docker.image('ubuntu').inside('-u root') {
-            sh 'echo "Ini adalah test"'
+            sh 'echo "Ini test"'
         }
     }
 }
