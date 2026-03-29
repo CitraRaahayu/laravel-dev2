@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        APP_ENV = "production"
-        PROD_HOST = "localhost"
+        PROD_HOST = "172.19.1.74"
         PROD_USER = "gita"
     }
 
@@ -15,33 +14,31 @@ pipeline {
             }
         }
 
-        stage('Build (SKIP di Jenkins)') {
-            steps {
-                echo "Build dilewati di Jenkins (jalan di WSL)"
-            }
-        }
-
         stage('Test') {
             steps {
-                sh 'echo "Ini test"'
+                sh 'echo "Test OK"'
             }
         }
 
-        stage('Deploy (SSH to WSL)') {
+        stage('Deploy') {
             steps {
-                sshagent(['ssh-prod']) {
+                sshagent(['ssh-gita']) {
                     sh '''
-                        echo "Deploy ke $PROD_USER@$PROD_HOST"
+                    set -e
 
-                        ssh -o StrictHostKeyChecking=no $PROD_USER@$PROD_HOST "
-                            cd /home/gita/laravel-dev2 &&
-                            git pull origin main &&
-                            composer install &&
-                            php artisan migrate --force || true &&
-                            php artisan config:cache || true &&
-                            php artisan route:cache || true &&
-                            echo DEPLOY SUCCESS
-                        "
+                    ssh -o StrictHostKeyChecking=no $PROD_USER@$PROD_HOST << 'EOF'
+                    set -e
+
+                    cd /home/gita/laravel-dev2 || exit 1
+
+                    git pull origin main
+                    composer install --no-dev --optimize-autoloader
+                    php artisan migrate --force
+                    php artisan config:cache
+                    php artisan route:cache
+
+                    echo "DEPLOY SUCCESS"
+                    EOF
                     '''
                 }
             }
