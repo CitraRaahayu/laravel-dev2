@@ -17,7 +17,11 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'composer install'
+                sh '''
+                    echo "Install Composer sementara..."
+                    curl -sS https://getcomposer.org/installer | php
+                    php composer.phar install
+                '''
             }
         }
 
@@ -32,6 +36,7 @@ pipeline {
                 sshagent(['ssh-prod']) {
                     sh '''
                         echo "Deploy ke $PROD_HOST"
+
                         ssh -o StrictHostKeyChecking=no $PROD_USER@$PROD_HOST "
                             cd /home/gita/laravel-dev2 &&
                             git pull origin main &&
