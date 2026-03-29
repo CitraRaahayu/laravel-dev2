@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         APP_ENV = "production"
-        PROD_HOST = "172.19.1.74"
+        PROD_HOST = "host.docker.internal"
         PROD_USER = "gita"
     }
 
