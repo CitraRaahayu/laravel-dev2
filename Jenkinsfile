@@ -1,32 +1,46 @@
-node {
+pipeline {
+    agent any
 
     environment {
         APP_ENV = "production"
-        PROD_HOST = "127.0.0.1"
+        PROD_HOST = "172.19.1.74"
+        PROD_USER = "gita"
     }
 
-    stage('Checkout') {
-        checkout scm
-    }
+    stages {
 
-    stage('Build') {
-        docker.image('composer:2').inside('-u root') {
-            sh 'composer install'
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
         }
-    }
 
-    stage('Test') {
-        docker.image('ubuntu').inside('-u root') {
-            sh 'echo "Ini test"'
+        stage('Build') {
+            steps {
+                sh 'composer install'
+            }
         }
-    }
 
-    stage('Deploy (SSH)') {
-        sshagent(['ssh-prod']) {
-            sh '''
-                echo "Deploy ke $PROD_HOST"
-                ssh -o StrictHostKeyChecking=no root@$PROD_HOST "echo DEPLOY LARAVEL-DEV2 JALAN"
-            '''
+        stage('Test') {
+            steps {
+                sh 'echo "Ini test"'
+            }
+        }
+
+        stage('Deploy (SSH to WSL)') {
+            steps {
+                sshagent(['ssh-prod']) {
+                    sh '''
+                        echo "Deploy ke $PROD_HOST"
+                        ssh -o StrictHostKeyChecking=no $PROD_USER@$PROD_HOST "
+                            cd /home/gita/laravel-dev2 &&
+                            git pull origin main &&
+                            composer install &&
+                            echo DEPLOY SUCCESS
+                        "
+                    '''
+                }
+            }
         }
     }
 }
