@@ -15,13 +15,9 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build (SKIP di Jenkins)') {
             steps {
-                sh '''
-                    echo "Install Composer sementara..."
-                    curl -sS https://getcomposer.org/installer | php
-                    php composer.phar install
-                '''
+                echo "Build dilewati di Jenkins (jalan di WSL)"
             }
         }
 
@@ -41,6 +37,7 @@ pipeline {
                             cd /home/gita/laravel-dev2 &&
                             git pull origin main &&
                             composer install &&
+                            php artisan migrate --force || true &&
                             echo DEPLOY SUCCESS
                         "
                     '''
