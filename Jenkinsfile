@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         APP_ENV = "production"
-        PROD_HOST = "host.docker.internal"
+        PROD_HOST = "localhost"
         PROD_USER = "gita"
     }
 
@@ -31,13 +31,15 @@ pipeline {
             steps {
                 sshagent(['ssh-prod']) {
                     sh '''
-                        echo "Deploy ke $PROD_HOST"
+                        echo "Deploy ke $PROD_USER@$PROD_HOST"
 
                         ssh -o StrictHostKeyChecking=no $PROD_USER@$PROD_HOST "
                             cd /home/gita/laravel-dev2 &&
                             git pull origin main &&
                             composer install &&
                             php artisan migrate --force || true &&
+                            php artisan config:cache || true &&
+                            php artisan route:cache || true &&
                             echo DEPLOY SUCCESS
                         "
                     '''
