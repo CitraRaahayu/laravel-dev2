@@ -20,19 +20,29 @@ pipeline {
                     sh '''
                     set -e
 
-                    ssh -o StrictHostKeyChecking=no $PROD_USER@$PROD_HOST << EOF
-                    set -e
+                    ssh -o StrictHostKeyChecking=no $PROD_USER@$PROD_HOST << 'EOF'
+set -e
 
-                    cd /home/gita/laravel-dev2 || exit 1
+cd /home/gita/laravel-dev2 || exit 1
 
-                    git pull origin main
-                    composer install --no-dev --optimize-autoloader
-                    php artisan migrate --force
-                    php artisan config:cache
-                    php artisan route:cache
+git reset --hard
+git clean -fd
 
-                    echo "DEPLOY SUCCESS"
-                    EOF
+git pull origin main
+
+rm -rf vendor
+rm -f composer.lock
+
+composer install --no-dev --optimize-autoloader
+
+php artisan migrate --force
+
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+
+echo "DEPLOY SUCCESS"
+EOF
                     '''
                 }
             }
