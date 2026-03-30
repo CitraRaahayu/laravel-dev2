@@ -8,12 +8,6 @@ pipeline {
 
     stages {
 
-        // stage('Checkout') {
-        //     steps {
-        //         checkout scm
-        //     }
-        // }
-
         stage('Deploy') {
             steps {
                 sshagent(['ssh-gita']) {
@@ -25,18 +19,14 @@ set -e
 
 cd /home/gita/laravel-dev2 || exit 1
 
-git reset --hard
-git clean -fd
-
+# Ambil update dari Git
 git pull origin main
 
-rm -rf vendor
-rm -f composer.lock
-
+# Install dependency sesuai composer.lock (STABIL)
 composer install --no-dev --optimize-autoloader
 
+# Laravel optimize sequence
 php artisan migrate --force
-
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
